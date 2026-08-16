@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anker - Resource Finder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+      background: #f5f5f5;
+    }
+    h1 {
+      font-size: 1.5em;
+    }
+    .resource {
+      background: white;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .resource h3 {
+      margin: 0 0 4px 0;
+    }
+    .resource .meta {
+      color: #555;
+      font-size: 0.9em;
+    }
+    #status {
+      color: #777;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Anker — Resources</h1>
+  <p id="status">Loading resources...</p>
+  <div id="resource-list"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://xwjqykzoscxokdgffndl.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_jat9Rcnm43HgD1qpZLHZaw__Ke0O2u1";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadResources() {
+      const statusEl = document.getElementById("status");
+      const listEl = document.getElementById("resource-list");
+
+      const { data, error } = await supabaseClient
+        .from("Data for Anker")
+        .select("*");
+
+      if (error) {
+        statusEl.textContent = "Error loading data: " + error.message;
+        console.error(error);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        statusEl.textContent = "No resources found yet.";
+        return;
+      }
+
+      statusEl.remove();
+
+      data.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "resource";
+
+        const addressLine = item.address_public && item.address
+          ? `<div class="meta">📍 ${item.address}</div>`
+          : "";
+
+        div.innerHTML = `
+          <h3>${item.name || "Unnamed"}</h3>
+          <div class="meta">${item.type || ""} · ${item.region || ""}</div>
+          ${addressLine}
+          <div class="meta">📞 ${item.phone || "N/A"}</div>
+        `;
+
+        listEl.appendChild(div);
+      });
+    }
+
+    loadResources();
+  </script>
+
+</body>
+</html>
