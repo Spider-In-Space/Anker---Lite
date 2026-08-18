@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Anker - Resource Finder</title>
+<link rel="icon" type="image/jpeg" href="logo.jpg">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,6 +16,11 @@
     }
     h1 {
       font-size: 1.5em;
+    }
+    select {
+      margin-bottom: 12px;
+      padding: 6px;
+      font-size: 1em;
     }
     .resource {
       background: white;
@@ -37,7 +44,14 @@
 </head>
 <body>
 
-  <h1>Anker — Resources</h1>
+<div style="display: flex; align-items: center; gap: 10px;">
+  <img src="logo.jpg" alt="Anker logo" style="height: 40px;">
+  <h1 style="margin: 0;">Anker — Resources</h1>
+</div>
+  <select id="sort-select" onchange="loadResources()">
+    <option value="none">Sort by...</option>
+    <option value="region">Location (A–Z)</option>
+  </select>
   <p id="status">Loading resources...</p>
   <div id="resource-list"></div>
 
@@ -51,10 +65,18 @@
     async function loadResources() {
       const statusEl = document.getElementById("status");
       const listEl = document.getElementById("resource-list");
+      statusEl.style.display = "block";
+      statusEl.textContent = "Loading resources...";
+      listEl.innerHTML = "";
 
-      const { data, error } = await supabaseClient
-        .from("Data for Anker")
-        .select("*");
+      const sortBy = document.getElementById("sort-select").value;
+
+      let query = supabaseClient.from("resources").select("*");
+      if (sortBy === "region") {
+        query = query.order("region", { ascending: true });
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         statusEl.textContent = "Error loading data: " + error.message;
@@ -67,7 +89,7 @@
         return;
       }
 
-      statusEl.remove();
+      statusEl.style.display = "none";
 
       data.forEach(item => {
         const div = document.createElement("div");
@@ -93,3 +115,4 @@
 
 </body>
 </html>
+
